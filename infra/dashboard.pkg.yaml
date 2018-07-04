@@ -1,0 +1,72 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Outputs:
+  AwsAccountId:
+    Description: Account ID where the app is deployed
+    Value:
+      Ref: AWS::AccountId
+  AwsRegion:
+    Description: Region where the app is deployed
+    Value:
+      Ref: AWS::Region
+Parameters:
+  CertificateArn:
+    Default: arn:aws:acm:us-east-1:826885071830:certificate/0ad34beb-2a84-48cb-a210-0189b315acfc
+    Description: ARN of the certificate for CloudFront
+    Type: String
+  CloudFrontOAI:
+    Default: PASTE YOUR CLOUDFRONT OAI ID HERE
+    Type: String
+  CloudFrontOAICanonical:
+    Default: PASTE YOUR CLOUDFRONT OAI CANONICAL USER ID HERE
+    Type: String
+  DomainName:
+    Default: iotquiz.experiments.cloud
+    Description: Name of the domain used for the quiz.
+    Type: String
+  MyUserEmail:
+    Default: WRITE YOUR EMAIL ADDRESS HERE
+    Type: String
+  MyUsername:
+    Default: WRITE YOUR DESIRED USER NAME HERE
+    Type: String
+Resources:
+  UsersStack:
+    Properties:
+      Parameters:
+        MyUserEmail:
+          Ref: MyUserEmail
+        MyUsername:
+          Ref: MyUsername
+      Tags:
+      - Key: Component
+        Value: quiz
+      - Key: Role
+        Value: iotcc
+      TemplateURL: https://s3.amazonaws.com/smarlaxp-tmp/9d730158ce644a4ac7edbc585a084d83.template
+    Type: AWS::CloudFormation::Stack
+  WebappStack:
+    Properties:
+      Parameters:
+        CertificateArn:
+          Ref: CertificateArn
+        CloudFrontOAI:
+          Ref: CloudFrontOAI
+        CloudFrontOAICanonical:
+          Ref: CloudFrontOAICanonical
+        DomainName:
+          Ref: DomainName
+        UserPoolId:
+          Fn::GetAtt:
+          - UsersStack
+          - Outputs.UserPoolId
+        UserPoolProviderName:
+          Fn::GetAtt:
+          - UsersStack
+          - Outputs.UserPoolProviderName
+      Tags:
+      - Key: Component
+        Value: quiz
+      - Key: Role
+        Value: iotcc
+      TemplateURL: https://s3.amazonaws.com/smarlaxp-tmp/d1882ea563379383b8224481ae583638.template
+    Type: AWS::CloudFormation::Stack

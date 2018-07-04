@@ -1,0 +1,19 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  PolicyName: 
+    Type: String
+    Description: Name of the quiz device policy.
+    Default: quiz-devices
+Resources:
+  QuizDevicePolicy:
+    Type: "AWS::IoT::Policy"
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - 
+            Sid: ManageConnections
+            Effect: Allow
+            Action:
+              - iot:*
+            Resource: '*'

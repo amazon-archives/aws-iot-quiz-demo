@@ -133,3 +133,9 @@ As our quiz is a private platform, only authorized users can access the system a
 Upon **application loading**, we need to verify the existence of credentials, and redirect the users to our login UI if they either don't have credentials or they have expired. In Vue.js the application lifecycle is managed at the `src/App.vue` file, so it must be configured to perform this tasks on application creation.
 
 Once the authentication provider is finished authenticating the user, it will redirect back to our `login` callback URL. We need to create a route in our application that handles these login requests and enables users to perform authenticated actions. We will create a `Login.vue` component and adapt Vue.js `router` to engage the component on the login route.
+
+### The Quiz Dashboard
+
+Once we've setup all our infrastructure and prepared our UI, is time to start developing the features of our amazing quiz app. Once the login succeeds and the app is loaded, the user will be redirected to the `/quiz` endpoint, which is where we will put our quiz game component.
+
+We will start sketching the initial screen for our quiz, that will show the available quiz devices. 

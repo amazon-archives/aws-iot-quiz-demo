@@ -17,7 +17,6 @@ export default {
     }
   },
   mounted () {
-    debugger
     const hash = window.location.hash.substring(1).split('&').map(item => {
       const ret = {}
       const splitItem = item.split('=')
@@ -26,7 +25,7 @@ export default {
     }).reduce((total, item) => ({ ...total, ...item }))
     this.auth.postAuth(hash.id_token)
       .then(() => {
-        debugger
+        this.$emit('state', 'run')
         this.$router.push('/quiz')
       })
       .catch(err => {

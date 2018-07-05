@@ -78,3 +78,30 @@ You need to validate the ownership of the domain you're requesting a certificate
 ![ACM Ownership validation](/static/acm-verify.png)
 
 After your certificate status transitions to `Verified`, you can use the certificate arn for linking it to our webapp distribution, by pasting the value on the `CertificateArn` parameter of the CloudFormation template. Then we need to perform an stack update to adapt to these changes - it will also take some time.
+
+### Configuring users resources
+
+With the deployment of our last stack, we have created several resources that will be used for authenticating and authorizing users in your platform. This is handled mostly by [Amazon Cognito](https://aws.amazon.com/cognito/), that will store and manage your user base, and perform any auth/n tasks required for your users to consume your services.
+
+There is a couple of manual steps we need to perform to finish configuring these resources:
+
+#### Configure authentication providers
+
+In the Cognito console you can configure how each User Pool Client interacts with its User Pool, and which authentication mechanisms it is allowed to perform:
+
+![Cognito App Client configuration](/static/cognito-client-settings.png)
+
+We need to enable Cognito as an enabled Identity Provider, and configure our login and logout URLs for our system - these URLs will be the only one authorized as callbacks from the login system upon any login/logout operation. Then we need to setup `implicit grant` as an allowed OAuth flow. Implicit grant allows Cognito to resolve Access Tokens directly and send them back to the application. We will use `openid`, `aws.cognito.signin.user.admin` and `profile` as authorized scopes.
+
+#### Configure Custom domain
+
+Once the authentication provider is set, we need to configure a domain for hosting our custom login UI. The login UI is handled by Cognito, which needs only an endpoint to host the application into. We will use our custom domain to host the login UI, in the subdomain `auth.iotquiz.experiments.cloud`.
+
+![Cognito Custom domain](/static/cognito-domain-setup.png)
+
+As we are using our custom domain, we need to create an alias recordset on our Hosted Zone to correctly resolve the DNS name of the auth system to the proper distribution URL. Copy the value of the Alias target for your login domain, and paste it in the `LoginDomainAliasTarget` parameter of the dashboard CloudFormation template.
+
+![Cognito Alias setup](/static/cognito-domain-alias-setup.png)
+
+Once we've pasted the value, we can update our CloudFormation stack to reflect these changes in your app.
+

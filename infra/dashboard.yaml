@@ -1,0 +1,76 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  CloudFrontOAI:
+    Type: String
+    Default: PASTE YOUR CLOUDFRONT OAI ID HERE
+  CloudFrontOAICanonical:
+    Type: String
+    Default: PASTE YOUR CLOUDFRONT OAI CANONICAL USER ID HERE
+  MyUserEmail:
+    Type: String
+    Default: WRITE YOUR EMAIL ADDRESS HERE
+  MyUsername:
+    Type: String
+    Default: WRITE YOUR DESIRED USER NAME HERE
+  DomainName: 
+    Type: String
+    Description: Name of the domain used for the quiz.
+    Default: iotquiz.experiments.cloud
+  CertificateArn:
+    Type: String
+    Description: ARN of the certificate for CloudFront
+    Default: PASTE YOUR CERTIFICATE ARN HERE
+  LoginDomainAliasTarget:
+    Type: String
+    Description: Login alias target used by Cognito
+    Default: PASTE YOUR LOGIN ALIAS TARGET HERE
+Resources:
+  UsersStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        MyUserEmail: !Ref MyUserEmail
+        MyUsername: !Ref MyUsername
+      Tags:
+        - 
+          Key: Component
+          Value: quiz
+        - 
+          Key: Role
+          Value: iotcc
+      TemplateURL: ./dashboard-users.yaml
+  WebappStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        CloudFrontOAI: !Ref CloudFrontOAI
+        CloudFrontOAICanonical: !Ref CloudFrontOAICanonical
+        DomainName: !Ref DomainName
+        UserPoolId: !GetAtt UsersStack.Outputs.UserPoolId
+        UserPoolProviderName: !GetAtt UsersStack.Outputs.UserPoolProviderName
+        CertificateArn: !Ref CertificateArn
+        LoginDomainAliasTarget: !Ref LoginDomainAliasTarget
+      Tags:
+        - 
+          Key: Component
+          Value: quiz
+        - 
+          Key: Role
+          Value: iotcc
+      TemplateURL: ./dashboard-webapp.yaml
+Outputs:
+  AwsRegion:
+    Value: !Ref AWS::Region
+    Description: Region where the app is deployed
+  AwsAccountId:
+    Value: !Ref AWS::AccountId
+    Description: Account ID where the app is deployed
+  UserPoolId:
+    Value: !GetAtt UsersStack.Outputs.UserPoolId
+    Description: ID of the solution's user pool
+  UserPoolClientId:
+    Value: !GetAtt WebappStack.Outputs.UserPoolClientId
+    Description: Webapp UserPoolClient id
+  IdentityPoolId:
+    Value: !GetAtt WebappStack.Outputs.IdentityPoolId
+    Description: Identity Pool id

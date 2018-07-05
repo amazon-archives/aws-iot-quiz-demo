@@ -1,0 +1,96 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Outputs:
+  AwsAccountId:
+    Description: Account ID where the app is deployed
+    Value:
+      Ref: AWS::AccountId
+  AwsRegion:
+    Description: Region where the app is deployed
+    Value:
+      Ref: AWS::Region
+  IdentityPoolId:
+    Description: Identity Pool id
+    Value:
+      Fn::GetAtt:
+      - WebappStack
+      - Outputs.IdentityPoolId
+  UserPoolClientId:
+    Description: Webapp UserPoolClient id
+    Value:
+      Fn::GetAtt:
+      - WebappStack
+      - Outputs.UserPoolClientId
+  UserPoolId:
+    Description: ID of the solution's user pool
+    Value:
+      Fn::GetAtt:
+      - UsersStack
+      - Outputs.UserPoolId
+Parameters:
+  CertificateArn:
+    Default: PASTE YOUR CERTIFICATE ARN HERE
+    Description: ARN of the certificate for CloudFront
+    Type: String
+  CloudFrontOAI:
+    Default: PASTE YOUR CLOUDFRONT OAI ID HERE
+    Type: String
+  CloudFrontOAICanonical:
+    Default: PASTE YOUR CLOUDFRONT OAI CANONICAL USER ID HERE
+    Type: String
+  DomainName:
+    Default: iotquiz.experiments.cloud
+    Description: Name of the domain used for the quiz.
+    Type: String
+  LoginDomainAliasTarget:
+    Default: PASTE YOUR LOGIN ALIAS TARGET HERE
+    Description: Login alias target used by Cognito
+    Type: String
+  MyUserEmail:
+    Default: WRITE YOUR EMAIL ADDRESS HERE
+    Type: String
+  MyUsername:
+    Default: WRITE YOUR DESIRED USER NAME HERE
+    Type: String
+Resources:
+  UsersStack:
+    Properties:
+      Parameters:
+        MyUserEmail:
+          Ref: MyUserEmail
+        MyUsername:
+          Ref: MyUsername
+      Tags:
+      - Key: Component
+        Value: quiz
+      - Key: Role
+        Value: iotcc
+      TemplateURL: https://s3.amazonaws.com/smarlaxp-tmp/9d730158ce644a4ac7edbc585a084d83.template
+    Type: AWS::CloudFormation::Stack
+  WebappStack:
+    Properties:
+      Parameters:
+        CertificateArn:
+          Ref: CertificateArn
+        CloudFrontOAI:
+          Ref: CloudFrontOAI
+        CloudFrontOAICanonical:
+          Ref: CloudFrontOAICanonical
+        DomainName:
+          Ref: DomainName
+        LoginDomainAliasTarget:
+          Ref: LoginDomainAliasTarget
+        UserPoolId:
+          Fn::GetAtt:
+          - UsersStack
+          - Outputs.UserPoolId
+        UserPoolProviderName:
+          Fn::GetAtt:
+          - UsersStack
+          - Outputs.UserPoolProviderName
+      Tags:
+      - Key: Component
+        Value: quiz
+      - Key: Role
+        Value: iotcc
+      TemplateURL: https://s3.amazonaws.com/smarlaxp-tmp/1e47fadde67b0951a2cf52506ce59caf.template
+    Type: AWS::CloudFormation::Stack

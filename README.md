@@ -69,4 +69,12 @@ Once these steps above are performed, we can spin up our template. It would take
 
 Once the infrastructure finishes spinning up, you can deploy your dashboard so it's accessible to the public. In this demo we will use the domain name `iotquiz.experiments.cloud` as the webapp's address - you should change this value accordingly when deploying the demo yourself. Once we've selected our domain name, we may need to change some NS records on it so it points to the Hosted Zone we have created.
 
-Once the domain is correctly setup, we could load our application by accessing it on a browser. However, upon loading the URL you may receive a warning saying that your certificate is not valid. This is due to using custom domains, without setting up a proper certificate that validates the identity of such domain name. We can create a certificate on Amazon Certificate Manager - it needs to be in the `us-east-1` region - and reference its ARN in our template's parameters.
+Once the domain is correctly setup, we could load our application by accessing it on a browser. However, upon loading the URL you may receive a warning saying that your certificate is not valid. This is due to using custom domains, without setting up a proper certificate that validates the identity of such domain name. We can create a certificate on Amazon Certificate Manager:
+
+![Request a certificate in ACM](/static/acm-request.png)
+
+You need to validate the ownership of the domain you're requesting a certificate for, either via Email or DNS. As we are using Route53 for our Hosted Zone, DNS validation is quite easy to perform:
+
+![ACM Ownership validation](/static/acm-verify.png)
+
+After your certificate status transitions to `Verified`, you can use the certificate arn for linking it to our webapp distribution, by pasting the value on the `CertificateArn` parameter of the CloudFormation template. Then we need to perform an stack update to adapt to these changes - it will also take some time.

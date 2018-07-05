@@ -23,7 +23,7 @@ Parameters:
   LoginDomainAliasTarget:
     Type: String
     Description: Login alias target used by Cognito
-    Default: PASTE YOUR ALIAS TARGET HERE
+    Default: PASTE YOUR LOGIN ALIAS TARGET HERE
 Resources:
   UsersStack:
     Type: AWS::CloudFormation::Stack
@@ -65,3 +65,12 @@ Outputs:
   AwsAccountId:
     Value: !Ref AWS::AccountId
     Description: Account ID where the app is deployed
+  UserPoolId:
+    Value: !GetAtt UsersStack.Outputs.UserPoolId
+    Description: ID of the solution's user pool
+  UserPoolClientId:
+    Value: !GetAtt WebappStack.Outputs.UserPoolClientId
+    Description: Webapp UserPoolClient id
+  IdentityPoolId:
+    Value: !GetAtt WebappStack.Outputs.IdentityPoolId
+    Description: Identity Pool id

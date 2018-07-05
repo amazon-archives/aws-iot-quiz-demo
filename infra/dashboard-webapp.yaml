@@ -190,7 +190,7 @@ Resources:
       GenerateSecret: false
       UserPoolId: !Ref UserPoolId
 Outputs:
-  UserPoolDashboardClient:
+  UserPoolClientId:
     Value: !Ref UserPoolDashboardClient
     Description: User Pool Client Id
   WebsiteBucket:

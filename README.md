@@ -105,3 +105,23 @@ As we are using our custom domain, we need to create an alias recordset on our H
 
 Once we've pasted the value, we can update our CloudFormation stack to reflect these changes in your app.
 
+### Starting with our UI
+
+Now our dashboard infrastructure is fully ready, it's time to start working on our dashboard for being able to use it for the Quiz. We will cover this development in several sections.
+
+#### Configuration
+
+The UI needs to know about some of the infrastructure resources used for the solution, to be able to use them when needed - e.g. the Cognito configuration to successfully rely unauthenticated users to login. To manage this and other configuration parameters for the application, we will create a `ConfigurationService` in our app. It will lay on `dashboard/src/services/ConfigurationService.js`. 
+
+We will store the actual values needed for our application within our dashboard's `assets/` folder, in a file name `config.json`. To avoid populating and maintaining these values manually, we will create a script that fetches the values from CloudFormation, and saves them in the config file. You will find this script at `scripts/configure-ui.sh`. Let's run the script to configure our UI.
+
+```bash
+$ bash scripts/configure-ui.sh
+INFO: Configuring UI
+INFO: Fetching deployment information.
+INFO: Creating JSON configuration
+INFO: Writing JSON configuration
+$ 
+```
+
+If we take a look at our `config.json` file now we'll see the resource identifiers and required values in there. They will be used by the UI for several procedures - e.g. authentication.

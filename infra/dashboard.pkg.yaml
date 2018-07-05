@@ -8,9 +8,27 @@ Outputs:
     Description: Region where the app is deployed
     Value:
       Ref: AWS::Region
+  IdentityPoolId:
+    Description: Identity Pool id
+    Value:
+      Fn::GetAtt:
+      - WebappStack
+      - Outputs.IdentityPoolId
+  UserPoolClientId:
+    Description: Webapp UserPoolClient id
+    Value:
+      Fn::GetAtt:
+      - WebappStack
+      - Outputs.UserPoolClientId
+  UserPoolId:
+    Description: ID of the solution's user pool
+    Value:
+      Fn::GetAtt:
+      - UsersStack
+      - Outputs.UserPoolId
 Parameters:
   CertificateArn:
-    Default: arn:aws:acm:us-east-1:826885071830:certificate/0ad34beb-2a84-48cb-a210-0189b315acfc
+    Default: PASTE YOUR CERTIFICATE ARN HERE
     Description: ARN of the certificate for CloudFront
     Type: String
   CloudFrontOAI:
@@ -22,6 +40,10 @@ Parameters:
   DomainName:
     Default: iotquiz.experiments.cloud
     Description: Name of the domain used for the quiz.
+    Type: String
+  LoginDomainAliasTarget:
+    Default: PASTE YOUR LOGIN ALIAS TARGET HERE
+    Description: Login alias target used by Cognito
     Type: String
   MyUserEmail:
     Default: WRITE YOUR EMAIL ADDRESS HERE
@@ -55,6 +77,8 @@ Resources:
           Ref: CloudFrontOAICanonical
         DomainName:
           Ref: DomainName
+        LoginDomainAliasTarget:
+          Ref: LoginDomainAliasTarget
         UserPoolId:
           Fn::GetAtt:
           - UsersStack
@@ -68,5 +92,5 @@ Resources:
         Value: quiz
       - Key: Role
         Value: iotcc
-      TemplateURL: https://s3.amazonaws.com/smarlaxp-tmp/d1882ea563379383b8224481ae583638.template
+      TemplateURL: https://s3.amazonaws.com/smarlaxp-tmp/1e47fadde67b0951a2cf52506ce59caf.template
     Type: AWS::CloudFormation::Stack

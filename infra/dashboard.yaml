@@ -19,7 +19,11 @@ Parameters:
   CertificateArn:
     Type: String
     Description: ARN of the certificate for CloudFront
-    Default: arn:aws:acm:us-east-1:826885071830:certificate/0ad34beb-2a84-48cb-a210-0189b315acfc
+    Default: PASTE YOUR CERTIFICATE ARN HERE
+  LoginDomainAliasTarget:
+    Type: String
+    Description: Login alias target used by Cognito
+    Default: PASTE YOUR ALIAS TARGET HERE
 Resources:
   UsersStack:
     Type: AWS::CloudFormation::Stack
@@ -45,6 +49,7 @@ Resources:
         UserPoolId: !GetAtt UsersStack.Outputs.UserPoolId
         UserPoolProviderName: !GetAtt UsersStack.Outputs.UserPoolProviderName
         CertificateArn: !Ref CertificateArn
+        LoginDomainAliasTarget: !Ref LoginDomainAliasTarget
       Tags:
         - 
           Key: Component

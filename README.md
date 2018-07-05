@@ -125,3 +125,11 @@ $
 ```
 
 If we take a look at our `config.json` file now we'll see the resource identifiers and required values in there. They will be used by the UI for several procedures - e.g. authentication.
+
+#### Authentication
+
+As our quiz is a private platform, only authorized users can access the system and play. We need to configure our UI to manage our credentials, and redirect us to login if we don't have any. The first thing we will create is another service, called `AuthService`. This service will handle all authentication and credential management tasks, and will be consumed by several parts of the application.
+
+Upon **application loading**, we need to verify the existence of credentials, and redirect the users to our login UI if they either don't have credentials or they have expired. In Vue.js the application lifecycle is managed at the `src/App.vue` file, so it must be configured to perform this tasks on application creation.
+
+Once the authentication provider is finished authenticating the user, it will redirect back to our `login` callback URL. We need to create a route in our application that handles these login requests and enables users to perform authenticated actions. We will create a `Login.vue` component and adapt Vue.js `router` to engage the component on the login route.

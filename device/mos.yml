@@ -37,8 +37,8 @@ config_schema:
   - ["wifi.ap.enable", false]
   - ["wifi.sta.enable", true]
   # Change SSID and password for provided network
-  - ["wifi.sta.ssid", "smarla-road"]
-  - ["wifi.sta.pass", "qwertyqwerty"]
+  - ["wifi.sta.ssid", "NovaMelee"]
+  - ["wifi.sta.pass", "Melee2018"]
   - ["mqtt.enable", true]
   - ["mqtt.clean_session", true]
   - ["mqtt.keep_alive", 60]

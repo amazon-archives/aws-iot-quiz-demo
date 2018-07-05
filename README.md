@@ -138,4 +138,6 @@ Once the authentication provider is finished authenticating the user, it will re
 
 Once we've setup all our infrastructure and prepared our UI, is time to start developing the features of our amazing quiz app. Once the login succeeds and the app is loaded, the user will be redirected to the `/quiz` endpoint, which is where we will put our quiz game component.
 
-We will start sketching the initial screen for our quiz, that will show the available quiz devices. 
+We will start sketching the initial screen for our quiz, that will show the presentation of the quiz app, and list available quiz devices. The admin will be able to select devices, activating them for the game. When the admin clicks on a given device, the dashboard will send a message to the device requesting its activation. The player that uses such device needs to click on any of the buttons for finalizing this activation.
+
+For managing connectivity with the devices, we will create a new service on our system - i.e. `DeviceService`, that will handle the exchange of information over AWS IoT. This service will be leveraged from our quiz component, to react to users actions.

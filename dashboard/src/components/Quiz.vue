@@ -5,7 +5,7 @@
       <div class="panel">
         <h2>Available quiz devices</h2>
         <div class="device-list">
-          <div class="device" v-for="device in devices" :class="device.status">
+          <div class="device" v-for="device in devices" :class="device.status" v-on:click="startDeviceActivation()">
             <i class="fa fa-microchip fa-3x"></i>
             {{ device.name }}
           </div>
@@ -18,10 +18,32 @@
 </template>
 
 <script>
+import DeviceService from '@/services/DeviceService'
+
 export default {
   name: 'quiz',
+  created () {
+    this.deviceService = DeviceService.getInstance()
+    const device = this.deviceService.connect()
+    device.on('connect', () => {
+      console.log('INFO: Connected to IoT.')
+      this.connected = true
+      device.subscribe('$aws/things/+/shadow/update/accepted')
+    })
+
+    device.on('message', (topic, payload) => {
+      console.log('INFO: Message received.')
+      this.processMessage(topic, payload)
+    })
+
+    device.on('error', () => {
+      console.error('ERROR: There was an error on the IoT connection.')
+      this.connected = false
+    })
+  },
   data () {
     return {
+      connected: false,
       currentSection: 'presentation',
       devices: [
         {
@@ -37,6 +59,20 @@ export default {
           status: 'idle'
         }
       ]
+    }
+  },
+  methods: {
+    processMessage (topic, payload) {
+      const thingName = topic.split('/')[3]
+      const availableDevices = this.devices.map(item => item.id)
+      if (availableDevices.indexOf(thingName) === -1) {
+        return
+      }
+
+      
+    },
+    startDeviceActivation (device) {
+      
     }
   }
 }

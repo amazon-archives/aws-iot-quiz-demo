@@ -15,7 +15,7 @@ export default {
     const creds = this.authService.getCredentials()
     if (creds) {
       this.statusChange('run')
-      this.$forceUpdate()()
+      this.$forceUpdate()
 
       // Manage credential expiration
       const accessToken = this.authService.getAccessToken()

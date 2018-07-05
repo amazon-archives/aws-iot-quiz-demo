@@ -1,6 +1,6 @@
 <template>
   <div id="app" v-show="status === 'run'">
-    <img src="./assets/logo.png">
+    <img class="logo" src="./assets/logo.png">
     <router-view v-on:state="statusChange" />
   </div>
 </template>
@@ -41,7 +41,7 @@ export default {
 }
 </script>
 
-<style>
+<style lang="scss">
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -49,5 +49,9 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+
+  .logo {
+    width: 100px;
+  }
 }
 </style>

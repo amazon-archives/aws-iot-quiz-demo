@@ -1,4 +1,3 @@
-import async from 'async'
 import aws from 'aws-sdk'
 import deviceSdk from 'aws-iot-device-sdk'
 import AuthService from './AuthService'
@@ -14,11 +13,16 @@ export default class DeviceService {
       region: this.config.get('AWS_REGION'),
       credentials
     })
+
+    this.iot = new aws.Iot({
+      region: this.config.get('AWS_REGION'),
+      credentials
+    })
   }
 
   connect () {
     const credentials = this.auth.getCredentials()
-    this.iot = new aws.IotData({
+    this.iotData = new aws.IotData({
       endpoint: this.config.get('IOT_ENDPOINT'),
       region: this.config.get('AWS_REGION'),
       credentials
@@ -27,7 +31,7 @@ export default class DeviceService {
     const req = {
       host: this.config.get('IOT_ENDPOINT'),
       protocol: 'wss',
-      clientId: 'ui' + new Date().getTime(),
+      clientId: `ui-${new Date().getTime()}`,
       accessKeyId: credentials.accessKeyId,
       secretKey: credentials.secretAccessKey,
       sessionToken: credentials.sessionToken
@@ -40,13 +44,13 @@ export default class DeviceService {
 
   getState (thingName) {
     console.log('getState(' + thingName + ') invoked - getting shadow')
-    if (this.iot == null) {
-      //console.log('getState(' + thingName + '): connecting to AWS IoT...')
+    if (this.iotData == null) {
+      // console.log('getState(' + thingName + '): connecting to AWS IoT...')
       this.connect()
     }
 
     return new Promise((resolve, reject) => {
-      this.iot.getThingShadow({
+      this.iotData.getThingShadow({
         thingName
       }, (err, data) => {
         if (err) {
@@ -55,6 +59,23 @@ export default class DeviceService {
           console.log('getState(): shadow=' + data.payload)
           const jsonPayload = JSON.parse(data.payload)
           resolve(jsonPayload)
+        }
+      })
+    })
+  }
+
+  getAvailableDevices () {
+    return new Promise((resolve, reject) => {
+      const thingTypeName = 'quiz-device'
+      const params = {
+        thingTypeName
+      }
+
+      this.iot.listThings(params, (err, data) => {
+        if (err) {
+          reject(err)
+        } else {
+          resolve(data.things)
         }
       })
     })

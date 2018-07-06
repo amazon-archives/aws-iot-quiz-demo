@@ -141,3 +141,11 @@ Once we've setup all our infrastructure and prepared our UI, is time to start de
 We will start sketching the initial screen for our quiz, that will show the presentation of the quiz app, and list available quiz devices. The admin will be able to select devices, activating them for the game. When the admin clicks on a given device, the dashboard will send a message to the device requesting its activation. The player that uses such device needs to click on any of the buttons for finalizing this activation.
 
 For managing connectivity with the devices, we will create a new service on our system - i.e. `DeviceService`, that will handle the exchange of information over AWS IoT. This service will be leveraged from our quiz component, to react to users actions.
+
+Upon loading the quiz, the system will call the `DeviceService` to fetch all available devices. The system identifies available devices as they are registered using the `quiz-device` type. Once this list is fetched, the service is called again to receive the actual shadow state of each of the devices, synchronizing the dashboard state object of each device with the real device state. 
+
+#### Activating a device
+
+TODO Capture
+
+When the quiz loads for the first time - and after all information from available devices is fetched - devices are set into a `disabled` state - i.e. they would not be used for that quiz game. In order to use a certain device in a game, we need to activate it. To do so, simply click on the device 

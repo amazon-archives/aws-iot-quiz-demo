@@ -25,7 +25,8 @@ export default {
         this.authService.login()
       }, diff)
     } else if (this.$route.name !== 'Login') {
-      this.authService.login()
+      // this.authService.login()
+      this.statusChange('run')
     }
   },
   data () {

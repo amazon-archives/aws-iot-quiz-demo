@@ -18,7 +18,7 @@ let spi = SPI.get();
 let it = 0;
 let state = {
   player: null,
-  status: 'answer-ko'  
+  status: 'waiting-signal'  
 };
 
 let lightmode = function(mode) {
@@ -65,17 +65,14 @@ let light = function(ar) {
 let syncState = function(desired) {
   print('INFO: Syncing state.')
   let changed = false;
-  for (let key in state) {
-    if (desired[key] === undefined) continue;
-    if (desired[key] !== state[key]) {
-      state[key] = desired[key];
-      changed = true;
-    }
+  if (desired.status && desired.status !== state.status) {
+    state.status = desired.status;
+    changed = true
   }
 
   if (changed) {
     print('INFO: Shadow information changed. Reporting.');
-    AWS.Shadow.update(0, { reported: state });
+    AWS.Shadow.update(0, state);
   } else {
     print('INFO: No change performed on shadow.');
   }

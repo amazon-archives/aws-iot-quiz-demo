@@ -3,18 +3,27 @@
     <div class="section presentation" :class="{ active: currentSection === 'presentation' }">
       <h1>Welcome to IoT Quiz. The best quiz EVER.</h1>
       <div class="panel">
+        <div class="join-quiz">
+          <div class="title">Want to join the quiz? <span class="quiz-url">{{ quizUrl }}</span></div>
+        </div>
         <h2>Available quiz devices</h2>
         <div class="device-list">
           <div class="device" v-for="device in devices" :class="device.state.status" v-on:click="startDeviceActivation(device)">
-            <i class="fa fa-microchip fa-3x"></i>
+            <i class="fa fa-3x" :class="{ 'fa-microchip': device.type === 'mcu', 'fa-mobile-alt': device.type === 'mobile' }"></i>
             {{ device.thingName }}
             <div class="player-name" v-show="device.playerName">
               {{ device.playerName }}
             </div>
             <div class="loader">
-              <i class="fa fa-microchip fa-3x fa-spin"></i>
+              <i class="fa fa-circle-notch fa-3x fa-spin"></i>
             </div>
           </div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary">
+            <i class="fa fa-play-circle"></i>
+            Start Quiz
+          </button>
         </div>
       </div>
     </div>
@@ -50,33 +59,31 @@ export default {
   },
   data () {
     return {
+      quizUrl: 'https://iotquiz.experiments.cloud/',
       connected: false,
       currentSection: 'presentation',
       devices: [
         {
           thingName: 'testDevice1',
+          type: 'mcu',
           state: {
             status: 'disabled'
           }
         },
         {
           thingName: 'testDevice2',
+          type: 'mcu',
           state: {
             status: 'disabled'
           }
         },
         {
           thingName: 'testDevice3',
+          type: 'mobile',
           state: {
             status: 'disabled'
           }
-        },
-        {
-          thingName: 'testDevice4',
-          state: {
-            status: 'disabled'
-          }
-        },
+        }
       ]
     }
   },
@@ -124,7 +131,7 @@ export default {
       const index = availableDevices.indexOf(thingName)
       if (index === -1) {
         // return
-      } else if(payload.state && payload.state.desired && payload.state.desired.status) {
+      } else if (payload.state && payload.state.desired && payload.state.desired.status) {
         this.devices[index].status = payload.state.desired.status
       }
     },
@@ -132,11 +139,11 @@ export default {
       switch (device.state.status) {
         case 'disabled':
           this.continueDeviceActivation(device)
-          break;
+          break
         default:
           // TODO Confirm before continuing
           this.continueDeviceActivation(device)
-          break;
+          break
       }
     },
 
@@ -173,6 +180,21 @@ export default {
     }
 
     .panel {
+      .join-quiz {
+        margin: 2em 0;
+        text-align: center;
+
+        .title {
+          font-size: 1.4em;
+
+          .quiz-url {
+            font-size: 2em;
+            font-weight: bold;
+            display: block;
+          }
+        }
+      }
+
       .device-list {
         .device {
           position: relative;

@@ -9,6 +9,10 @@ export default class DeviceService {
     this.config = ConfigurationService.getInstance()
 
     const credentials = this.auth.getCredentials()
+    this.configure(credentials)
+  }
+
+  configure (credentials) {
     this.dynamo = new aws.DynamoDB.DocumentClient({
       region: this.config.get('AWS_REGION'),
       credentials
@@ -18,16 +22,16 @@ export default class DeviceService {
       region: this.config.get('AWS_REGION'),
       credentials
     })
-  }
 
-  connect () {
-    const credentials = this.auth.getCredentials()
     this.iotData = new aws.IotData({
       endpoint: this.config.get('IOT_ENDPOINT'),
       region: this.config.get('AWS_REGION'),
       credentials
     })
+  }
 
+  connect () {
+    const credentials = this.auth.getCredentials()
     const req = {
       host: this.config.get('IOT_ENDPOINT'),
       protocol: 'wss',
@@ -76,6 +80,31 @@ export default class DeviceService {
           reject(err)
         } else {
           resolve(data.things)
+        }
+      })
+    })
+  }
+
+  startUserRegistration (username) {
+    return new Promise((resolve, reject) => {
+      const IdentityId = this.auth.getUnauthIdentity()
+      const timestamp = new Date().getTime()
+      const payload = JSON.stringify({
+        IdentityId,
+        timestamp,
+        username
+      })
+
+      const params = {
+        topic: `iotquiz/registratios/${IdentityId}`,
+        payload,
+        qos: 0
+      }
+      this.iotData.publish(params, (err, data) => {
+        if (err) {
+          reject(err)
+        } else {
+          resolve(data)
         }
       })
     })

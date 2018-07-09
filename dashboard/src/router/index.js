@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import HelloWorld from '@/components/HelloWorld'
 import Login from '@/components/Login'
+import JoinQuiz from '@/components/JoinQuiz'
 import Quiz from '@/components/Quiz'
 
 Vue.use(Router)
@@ -12,17 +13,34 @@ export default new Router({
     {
       path: '/',
       name: 'HelloWorld',
-      component: HelloWorld
+      component: HelloWorld,
+      meta: {
+        public: true
+      }
     },
     {
       path: '/login',
       name: 'Login',
-      component: Login
+      component: Login,
+      meta: {
+        public: true
+      }
     },
     {
       path: '/quiz',
       name: 'Quiz',
-      component: Quiz
+      component: Quiz,
+      meta: {
+        public: false
+      }
+    },
+    {
+      path: '/join-quiz',
+      name: 'JoinQuiz',
+      component: JoinQuiz,
+      meta: {
+        public: true
+      }
     }
   ]
 })

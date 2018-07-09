@@ -1,0 +1,57 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  ButtonDsn:
+    Type: String
+    Description: DSN of the button used as clicker
+Resources:
+  ClickerManagementIotRule:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      TopicRulePayload:
+        Actions:
+          - 
+            Republish:
+              RoleArn: !GetAtt ClickerManagementRole.Arn
+              Topic: 'iotquiz/game/123/clicker'
+        Description: Manages the quiz using an Iot button
+        RuleDisabled: No
+        Sql: !Sub select * from 'iotbutton/${ButtonDsn}'
+  ClickerManagementRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement: 
+          - 
+            Effect: "Allow"
+            Principal: 
+              Service: 
+                - "iot.amazonaws.com"
+            Action: 
+              - "sts:AssumeRole"
+      Policies:
+        - 
+          PolicyName: "CloudWatchLogs"
+          PolicyDocument: 
+            Version: "2012-10-17"
+            Statement: 
+              - 
+                Sid: "WriteLogs"
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Effect: "Allow"
+                Resource: "*"
+        - 
+          PolicyName: "Republish"
+          PolicyDocument: 
+            Version: "2012-10-17"
+            Statement: 
+              - 
+                Sid: "Republish"
+                Action:
+                  - "iot:Publish"
+                Effect: "Allow"
+                Resource: "*"
+  

@@ -1,0 +1,57 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Parameters:
+  ThingTypeName:
+    Type: String
+    Default: QuizDevice
+Resources:
+  DeviceRegistrationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      Runtime: nodejs6.10
+      CodeUri: ../functions/device-registration
+      Role: !GetAtt DeviceRegistrationRole.Arn
+      MemorySize: 1024
+      Environment:
+        Variables:
+          THING_TYPE_NAME: !Ref ThingTypeName
+          DEVICE_POLICY_NAME: !ImportValue iotquiz-devices-policy
+      Events:
+        IotRegistration:
+          Type: IoTRule
+          Properties:
+            Sql: select * from 'iotquiz/registrations/+'
+  DeviceRegistrationRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: Allow
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Policies:
+        -
+          PolicyName: "DeviceRegistrationPolicy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              -
+                Sid: "WriteLogs"
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Effect: Allow
+                Resource: "*"
+              - 
+                Sid: ManageFootprint
+                Action:
+                  - iot:*
+                Effect: Allow
+                Resource: "*"

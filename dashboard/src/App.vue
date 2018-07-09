@@ -12,30 +12,7 @@ export default {
   name: 'App',
   created () {
     this.authService = AuthService.getInstance()
-    const creds = this.authService.getCredentials()
-    if (creds) {
-      this.statusChange('run')
-      this.$forceUpdate()
-
-      // Manage credential expiration
-      const accessToken = this.authService.getAccessToken()
-      const expiration = accessToken.exp * 1000
-      const diff = expiration - (new Date().getTime())
-      setTimeout(() => {
-        this.authService.login()
-      }, diff)
-    } else if (!this.$route.meta.public) {
-      this.authService.login()
-    } else {
-      this.authService.unauthLogin()
-        .then(data => {
-          console.log('INFO: Anonymous user logged in')
-        })
-        .catch(err => {
-          console.error('ERROR: Failed to log in anonymous used.')
-          console.error(err)
-        })
-    }
+    this.verifyRoute()
   },
   data () {
     return {
@@ -45,6 +22,40 @@ export default {
   methods: {
     statusChange (st) {
       this.status = st
+    },
+    verifyRoute () {
+      const creds = this.authService.getCredentials()
+      if (creds) {
+        this.statusChange('run')
+        this.$forceUpdate()
+
+        // Manage credential expiration
+        const accessToken = this.authService.getAccessToken()
+        const expiration = accessToken.exp * 1000
+        const diff = expiration - (new Date().getTime())
+        setTimeout(() => {
+          this.authService.login()
+        }, diff)
+      } else if (!this.$route.meta.public) {
+        this.authService.login()
+      } else {
+        const unauthCreds = this.authService.getUnauthCredentials()
+        if (!unauthCreds) {
+          this.authService.unauthLogin()
+            .then(data => {
+              console.log('INFO: Anonymous user logged in')
+            })
+            .catch(err => {
+              console.error('ERROR: Failed to log in anonymous used.')
+              console.error(err)
+            })
+        }
+      }
+    }
+  },
+  watch: {
+    $route (to, from) {
+      this.verifyRoute()
     }
   }
 }

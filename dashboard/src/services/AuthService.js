@@ -115,6 +115,16 @@ export default class AuthService {
     }
   }
 
+  getIdentity () {
+    const identity = localStorage.getItem('auth-identity')
+    return identity
+  }
+
+  getUnauthIdentity () {
+    const identity = localStorage.getItem('unauth-identity')
+    return identity
+  }
+
   unauthLogin () {
     const AccountId = this.config.get('AWS_ACCOUNT_ID')
     const request = {
@@ -190,10 +200,12 @@ export default class AuthService {
           if (unauth) {
             this.unauthCredentials = creds
             localStorage.setItem('unauth-credentials', JSON.stringify(creds))
+            localStorage.setItem('unauth-identity', IdentityId)
           } else {
             this.credentials = creds
             localStorage.setItem('quiz-preferred-login-provider', 'cognito')
             localStorage.setItem('auth-credentials', JSON.stringify(creds))
+            localStorage.setItem('auth-identity', IdentityId)
           }
           resolve(creds)
         }

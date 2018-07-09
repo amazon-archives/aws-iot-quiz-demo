@@ -1,5 +1,5 @@
 <template>
-  <div id="app" v-show="status === 'run'">
+  <div id="app" v-show="status === 'run' || $route.meta.public">
     <img class="logo" src="./assets/logo.png">
     <router-view v-on:state="statusChange" />
   </div>
@@ -24,9 +24,17 @@ export default {
       setTimeout(() => {
         this.authService.login()
       }, diff)
-    } else if (this.$route.name !== 'Login') {
-      // this.authService.login()
-      this.statusChange('run')
+    } else if (!this.$route.meta.public) {
+      this.authService.login()
+    } else {
+      this.authService.unauthLogin()
+        .then(data => {
+          console.log('INFO: Anonymous user logged in')
+        })
+        .catch(err => {
+          console.error('ERROR: Failed to log in anonymous used.')
+          console.error(err)
+        })
     }
   },
   data () {
@@ -53,6 +61,10 @@ export default {
 
   .logo {
     width: 100px;
+  }
+
+  .btn.btn-success {
+    color: white !important;
   }
 }
 </style>

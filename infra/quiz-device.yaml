@@ -17,3 +17,9 @@ Resources:
             Action:
               - iot:*
             Resource: '*'
+Outputs: 
+  DevicePolicyName:
+    Value: !Ref QuizDevicePolicy
+    Description: Name of the policy used for devices
+    Export:
+      Name: iotquiz-devices-policy

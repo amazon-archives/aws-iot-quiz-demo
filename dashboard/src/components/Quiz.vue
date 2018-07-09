@@ -10,9 +10,11 @@
         <div class="device-list">
           <div class="device" v-for="device in devices" :class="device.state.status" v-on:click="startDeviceActivation(device)">
             <i class="fa fa-3x" :class="{ 'fa-microchip': device.type === 'mcu', 'fa-mobile-alt': device.type === 'mobile' }"></i>
-            {{ device.thingName }}
-            <div class="player-name" v-show="device.playerName">
-              {{ device.playerName }}
+            <div class="thing-name">
+              {{ device.thingName }}
+            </div>
+            <div class="player-name" v-show="device.attributes.Name">
+              {{ device.attributes.Name }}
             </div>
             <div class="loader">
               <i class="fa fa-circle-notch fa-3x fa-spin"></i>
@@ -20,42 +22,59 @@
           </div>
         </div>
         <div class="actions">
-          <button class="btn btn-primary">
+          <button class="btn btn-primary" @click="startQuiz()">
             <i class="fa fa-play-circle"></i>
             Start Quiz
           </button>
         </div>
       </div>
     </div>
-    <div class="section game" :class="{ active: currentSection === 'game' }"></div>
-    <div class="section results" :class="{ active: currentSection === 'results' }"></div>
+    <div class="section game" :class="{ active: currentSection === 'game' }" v-if="currentQuestion">
+      <h1>{{ currentQuestion.label }}</h1>
+      <div class="answers">
+        <div class="row answer" v-for="answer in currentQuestion.answers">
+          <div class="col-6 text-right">
+            {{ answer.label }}
+          </div>
+          <div class="col-6 responses text-left">
+            <div class="response" v-for="response in answer.responses">
+              {{ response._label }} 
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="section results" :class="{ active: currentSection === 'results' }">
+      <h1>Results</h1>
+      <div class="row" v-for="question in questions" style="margin-top: 1em">
+        <div class="col-6 text-right">
+          {{ question.label }}
+        </div>
+        <div class="col-6 text-left">
+          <div class="answer" v-for="answer in question.answers" v-if="answer.responses">
+            <span class="label">{{ answer.label }}</span>
+            <span class="value">({{ answer.responses.length }})</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
+import AuthService from '@/services/AuthService'
 import DeviceService from '@/services/DeviceService'
 
 export default {
   name: 'quiz',
   created () {
+    this.authService = AuthService.getInstance()
     this.deviceService = DeviceService.getInstance()
-    const device = this.deviceService.connect()
-    this.device = device
-    device.on('connect', () => {
-      console.log('INFO: Connected to IoT.')
-      this.connected = true
-      device.subscribe('$aws/things/+/shadow/update/accepted')
-    })
-
-    device.on('message', (topic, payload) => {
-      console.log('INFO: Message received.')
-      this.processMessage(topic, JSON.parse(payload))
-    })
-
-    device.on('error', () => {
-      console.error('ERROR: There was an error on the IoT connection.')
-      this.connected = false
-    })
+  },
+  computed: {
+    currentQuestion () {
+      return this.questions[this.currentQuestionIndex]
+    }
   },
   data () {
     return {
@@ -84,17 +103,83 @@ export default {
             status: 'disabled'
           }
         }
+      ],
+      currentQuestionIndex: -1,
+      questions: [
+        {
+          code: 'qq1',
+          label: 'What is the coolest thing ever?',
+          type: 'short',
+          answers: [
+            {
+              code: 'a1',
+              label: 'Unicorns'
+            },
+            {
+              code: 'a2',
+              label: 'Ninjas'
+            },
+            {
+              code: 'a3',
+              label: 'IoT'
+            }
+          ]
+        },
+        {
+          code: 'qq2',
+          label: 'What can be cooler than a unicorn?',
+          type: 'short',
+          answers: [
+            {
+              code: 'a1',
+              label: 'Other unicorn'
+            },
+            {
+              code: 'a2',
+              label: 'Ninjas'
+            },
+            {
+              code: 'a3',
+              label: 'AWS IoT'
+            }
+          ]
+        }
       ]
     }
   },
   mounted () {
+    const credentials = this.authService.getCredentials()
+    this.deviceService.configure(credentials)
+    const device = this.deviceService.connect()
+    this.device = device
+    device.on('connect', () => {
+      console.log('INFO: Connected to IoT.')
+      this.connected = true
+      device.subscribe('$aws/things/+/shadow/update/accepted')
+      device.subscribe('iotquiz/registrations/+/successful')
+      device.subscribe('iotquiz/game/#')
+    })
+
+    device.on('message', (topic, payload) => {
+      console.log('INFO: Message received.')
+      this.processMessage(topic, JSON.parse(payload))
+    })
+
+    device.on('error', () => {
+      console.error('ERROR: There was an error on the IoT connection.')
+      this.connected = false
+    })
     this.init()
   },
   methods: {
     init () {
       this.deviceService.getAvailableDevices()
         .then(deviceList => {
-          this.devices = this.deviceList
+          this.devices = deviceList.map(item => ({
+            ...item,
+            state: {},
+            type: 'mobile'
+          }))
           this.fetchData()
         })
         .catch(err => {
@@ -121,18 +206,68 @@ export default {
           }
         })
         .catch(err => {
-          console.error(`ERROR: Failed to fetch state for device ${thingName}`)
-          console.error(err)
+          switch (err.code) {
+            case 'ResourceNotFoundException':
+              console.log('INFO: Device is not well configured. configuring...')
+              const state = {
+                status: 'idle'
+              }
+              this.deviceService.updateDeviceState(device, state)
+              device.state = state
+              break
+            default:
+              console.error(`ERROR: Failed to fetch state for device ${thingName}`)
+              console.error(err)
+          }
         })
     },
     processMessage (topic, payload) {
-      const thingName = topic.split('/')[2]
-      const availableDevices = this.devices.map(item => item.id)
-      const index = availableDevices.indexOf(thingName)
-      if (index === -1) {
-        // return
-      } else if (payload.state && payload.state.desired && payload.state.desired.status) {
-        this.devices[index].status = payload.state.desired.status
+      const topicStr = topic.indexOf('shadow/update/accepted') !== -1 ? 'shadow' : topic.indexOf('shadow/update/accepted') !== -1 ? 'registration' : topic.indexOf('/answer') !== -1 ? 'answer' : topic.indexOf('/clicker') !== -1 ? 'clicker' : 'unknown'
+      switch (topicStr) {
+        case 'shadow':
+          const thingName = topic.split('/')[2]
+          const availableDevices = this.devices.map(item => item.id)
+          const index = availableDevices.indexOf(thingName)
+          if (index === -1) {
+            // return
+          } else if (payload.state && payload.state.desired && payload.state.desired.status) {
+            this.devices[index].status = payload.state.desired.status
+          }
+          break
+        case 'registration':
+          this.init()
+          break
+        case 'answer':
+          const answer = payload.answer
+          const code = answer.value
+
+          const match = this.currentQuestion.answers.filter(item => item.code === code)[0]
+          if (!match) {
+            console.error('ERROR: Received erroneous response.')
+            break
+          }
+
+          match.responses.push(answer)
+          this.$forceUpdate()
+          break
+        case 'clicker':
+          switch(payload.clickType) {
+            case 'SINGLE':
+              // Next
+              this.currentQuestionIndex++
+              this.selectQuestion()
+              break
+            case 'LONG':
+              // Previous
+              this.currentQuestionIndex--
+              this.selectQuestion()
+              break
+            case 'DOUBLE':
+              // Summary
+              this.selectQuestion(-1)
+              break
+          }
+          break
       }
     },
     startDeviceActivation (device) {
@@ -161,6 +296,40 @@ export default {
       this.deviceService.updateDeviceState(device, {
         status: 'enabled'
       })
+    },
+
+    startQuiz () {
+      this.currentQuestionIndex = 0
+      this.currentSection = 'game'
+      const payload = {
+        question: this.currentQuestion
+      }
+      this.device.publish('iotquiz/game/123/start', JSON.stringify(payload))
+      this.selectQuestion(0, false)
+    },
+
+    selectQuestion (questionIndex = this.currentQuestionIndex, notify = true) {
+      if (questionIndex < 0 || questionIndex >= this.questions.length) {
+        this.currentQuestionIndex = -1
+        this.currentSection = 'results'
+      } else {
+        this.currentQuestionIndex = questionIndex
+
+        const answers = this.currentQuestion.answers
+        for (let i = 0; i < answers.length; i++) {
+          const answer = answers[i]
+          if (!answer.responses) {
+            answer.responses = []
+          }
+        }
+
+        if (notify) {
+          const payload = {
+            question: this.currentQuestion
+          }
+          this.device.publish('iotquiz/game/123/question', JSON.stringify(payload))
+        }
+      }
     }
   }
 }
@@ -210,6 +379,13 @@ export default {
           > i {
             display: block;
             margin-bottom: 0.3em;
+          }
+
+          .thing-name {
+            max-width: 100px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
           }
 
           .player-name {
@@ -284,6 +460,29 @@ export default {
         }
       }
 
+    }
+
+    .answers {
+      margin-top: 2em;
+
+      .answer {
+        padding: 1em;
+        border-bottom: 1px solid #aaa;
+        font-size: 2em;
+      }
+
+      .responses {
+
+        .response {
+          position: relative;
+          width: 30px;
+          height: 30px;
+          border-radius: 15px;
+          display: inline-block;
+          margin: 0 0.5em;
+          background: green;
+        }
+      }
     }
   }
 }

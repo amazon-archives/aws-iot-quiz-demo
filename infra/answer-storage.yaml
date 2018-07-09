@@ -1,0 +1,80 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  AnswerStorageIotRule:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      TopicRulePayload:
+        Actions:
+          - 
+            DynamoDBv2:
+              PutItem: 
+                TableName: !Ref AnswerStorageTable
+              RoleArn: !GetAtt AnswerStorageRole.Arn
+        Description: Stores answers from devices in DynamoDB
+        RuleDisabled: No
+        Sql: select answer.* as answer, topic(3) as GameId, answer.question as QuestionId, answer.Identity as UserId, timestamp() as Caption from 'iotquiz/game/+/answer'
+  AnswerStorageTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - 
+          AttributeName: GameId
+          AttributeType: S
+        - 
+          AttributeName: QuestionId
+          AttributeType: S
+      KeySchema:
+        - 
+          AttributeName: QuestionId
+          KeyType: HASH
+        - 
+          AttributeName: GameId
+          KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      Tags: 
+        - 
+          Key: Component
+          Value: iotquiz
+        - 
+          Key: Role
+          Value: iotcc
+  AnswerStorageRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement: 
+          - 
+            Effect: "Allow"
+            Principal: 
+              Service: 
+                - "iot.amazonaws.com"
+            Action: 
+              - "sts:AssumeRole"
+      Policies:
+        - 
+          PolicyName: "CloudWatchLogs"
+          PolicyDocument: 
+            Version: "2012-10-17"
+            Statement: 
+              - 
+                Sid: "WriteLogs"
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Effect: "Allow"
+                Resource: "*"
+        - 
+          PolicyName: "StoreInDynamo"
+          PolicyDocument: 
+            Version: "2012-10-17"
+            Statement: 
+              - 
+                Sid: "WriteLogs"
+                Action:
+                  - "dynamodb:*"
+                Effect: "Allow"
+                Resource: !GetAtt AnswerStorageTable.Arn

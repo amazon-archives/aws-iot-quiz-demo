@@ -68,9 +68,30 @@ export default class DeviceService {
     })
   }
 
+  getMyDevice () {
+    return new Promise((resolve, reject) => {
+      const Identity = this.auth.getUnauthIdentity()
+      this.getAvailableDevices()
+        .then(data => {
+          const matches = data.filter(item => item.thingName === Identity)
+          if (matches.length) {
+            console.log('INFO: Device for user found successfully')
+            resolve(matches[0])
+          } else {
+            console.log('INFO: Device has not finished activating yet')
+            resolve(null)
+          }
+        })
+        .catch(err => {
+          console.error('ERROR: Failed to fetch available devices.')
+          reject(err)
+        })
+    })
+  }
+
   getAvailableDevices () {
     return new Promise((resolve, reject) => {
-      const thingTypeName = 'quiz-device'
+      const thingTypeName = 'QuizDevice'
       const params = {
         thingTypeName
       }
@@ -96,7 +117,7 @@ export default class DeviceService {
       })
 
       const params = {
-        topic: `iotquiz/registratios/${IdentityId}`,
+        topic: `iotquiz/registrations/${IdentityId}`,
         payload,
         qos: 0
       }
@@ -106,6 +127,21 @@ export default class DeviceService {
         } else {
           resolve(data)
         }
+      })
+    })
+  }
+
+  updateDeviceState (device, state) {
+    const { thingName } = device
+
+    return new Promise((resolve, reject) => {
+      this.iotData.publish({
+        topic: `$$aws/things/${thingName}/shadow/update`,
+        payload: JSON.stringify({
+          state: {
+            desired: state
+          }
+        })
       })
     })
   }

@@ -16,11 +16,14 @@
       </div>
     </div>
     <div class="section loading" :class="{ active: currentSection === 'loading' }">
-      <h2>Welcome, {{ username }}</h2>
+      <h2 v-if="username">Welcome, {{ username }}</h2>
       <div class="loader">
         <i class="fa fa-circle-notch fa-spin fa-3x"></i>
         <div class="loading-message">{{ loadingMessage }}</div>
       </div>
+    </div>
+    <div class="section start" :class="{ active: currentSection === 'start' }">
+      <h2>All set, {{ username }}</h2>
     </div>
   </div>
 </template>
@@ -39,10 +42,25 @@ export default {
   },
   data () {
     return {
-      currentSection: 'join',
+      currentSection: 'loading',
       loadingMessage: 'Loading...',
-      username: ''
+      username: '',
+      loadInterval: null
     }
+  },
+  mounted () {
+    this.deviceService.getMyDevice()
+      .then(device => {
+        if (device) {
+          this.username = device.attributes.Name
+          this.startQuiz()
+        } else {
+          this.currentSection = 'join'
+        }
+      })
+      .catch(err => {
+        console.error(err)
+      })
   },
   methods: {
     setSection (section) {
@@ -60,12 +78,39 @@ export default {
         .then(data => {
           console.log('INFO: Successfully registered user.')
           this.loadingMessage = 'Activating device...'
+          this.loadInterval = setInterval(() => {
+            this.deviceService.getMyDevice()
+              .then(device => {
+                if (device) {
+                  clearInterval(this.loadInterval)
+                  this.finishJoin()
+                } else {
+                  this.loadingMessage = 'Waiting for activation...'
+                }
+              })
+              .catch(err => {
+                console.error(err)
+              })
+          }, 500)
         })
         .catch(err => {
           console.error('ERROR: Failed to register device')
           console.error(err)
           this.loadingMessage = 'There was an error registering.'
         })
+    },
+
+    finishJoin () {
+      console.log('INFO: Finishing join')
+      this.loadingMessage = 'Activation ready. Starting...'
+      setTimeout(() => {
+        this.startQuiz()
+      }, 500)
+    },
+
+    startQuiz () {
+      console.log('INFO: Starting quiz.')
+      this.$router.push('/play')
     }
   }
 }

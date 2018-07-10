@@ -12,7 +12,7 @@ Resources:
               RoleArn: !GetAtt AnswerStorageRole.Arn
         Description: Stores answers from devices in DynamoDB
         RuleDisabled: No
-        Sql: select answer.* as answer, topic(3) as GameId, answer.question as QuestionId, answer.Identity as UserId, timestamp() as Caption from 'iotquiz/game/+/answer'
+        Sql: select answer.value as answer, topic(3) as GameId, answer.question as QuestionId, answer.Identity as UserId, timestamp() as Caption from 'iotquiz/game/+/answer'
   AnswerStorageTable:
     Type: AWS::DynamoDB::Table
     Properties:

@@ -13,6 +13,7 @@ export default class DeviceService {
   }
 
   configure (credentials) {
+    this.credentials = credentials
     this.dynamo = new aws.DynamoDB.DocumentClient({
       region: this.config.get('AWS_REGION'),
       credentials
@@ -31,7 +32,7 @@ export default class DeviceService {
   }
 
   connect () {
-    const credentials = this.auth.getCredentials()
+    const credentials = this.credentials || this.auth.getCredentials()
     const req = {
       host: this.config.get('IOT_ENDPOINT'),
       protocol: 'wss',

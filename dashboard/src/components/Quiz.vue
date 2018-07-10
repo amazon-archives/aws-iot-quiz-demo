@@ -22,6 +22,10 @@
           </div>
         </div>
         <div class="actions">
+          <button class="btn btn-default" @click="currentSection = 'question-input'">
+            <i class="fa fa-question"></i>
+            Set questions
+          </button>
           <button class="btn btn-primary" @click="startQuiz()">
             <i class="fa fa-play-circle"></i>
             Start Quiz
@@ -38,7 +42,7 @@
           </div>
           <div class="col-6 responses text-left">
             <div class="response" v-for="response in answer.responses">
-              {{ response._label }} 
+              {{ response._label }}
             </div>
           </div>
         </div>
@@ -57,6 +61,10 @@
           </div>
         </div>
       </div>
+    </div>
+    <div class="section question-input" :class="{ active: currentSection === 'question-input' }">
+      <h1>Question input</h1>
+      <textarea v-model="questionInputRaw"></textarea>
     </div>
   </div>
 </template>
@@ -105,6 +113,7 @@ export default {
         }
       ],
       currentQuestionIndex: -1,
+      questionInputRaw: '',
       questions: [
         {
           code: 'qq1',
@@ -251,7 +260,7 @@ export default {
           this.$forceUpdate()
           break
         case 'clicker':
-          switch(payload.clickType) {
+          switch (payload.clickType) {
             case 'SINGLE':
               // Next
               this.currentQuestionIndex++
@@ -328,6 +337,17 @@ export default {
             question: this.currentQuestion
           }
           this.device.publish('iotquiz/game/123/question', JSON.stringify(payload))
+        }
+      }
+    }
+  },
+  watch: {
+    questionInputRaw (value) {
+      if (value && value.length) {
+        const json = JSON.parse(value)
+        if (json) {
+          this.questions = json
+          this.currentSection = 'presentation'
         }
       }
     }

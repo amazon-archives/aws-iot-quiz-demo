@@ -4,7 +4,13 @@
       {{ playerName }}
     </div>
     <div class="section waiting" :class="{ active: currentMode === 'waiting' }">
-      <div class="message">The quiz has not started yet</div>
+      <div class="message" v-if="gameMode === 'normal'">The quiz has not started yet</div>
+      <div class="actions" v-if="gameMode === 'autoplay'">
+        <button class="btn btn-primary" @click="startSurvey()">
+          <i class="fa fa-play-circle"></i>
+          Start survey
+        </button>
+      </div>
     </div>
     <div class="section question" :class="{ active: currentMode === 'question' }">
       <div class="q">
@@ -23,10 +29,10 @@
         <div class="a free" v-if="currentQuestion.type === 'free'">
           <div class="form-group text-center">
             <label class="form-label" style="display: block">Your answer</label>
-            <textarea class="form-control" rows="5" cols="30"></textarea>
+            <textarea class="form-control" rows="5" cols="30" v-model="freeAnswer"></textarea>
           </div>
           <div class="text-center actions">
-            <button class="btn btn-success">
+            <button class="btn btn-success" @click="submitFreeAnswer()">
               Submit
             </button>
           </div>
@@ -34,7 +40,9 @@
       </div>
     </div>
     <div class="section answer" :class="{ active: currentMode === 'answer' }"></div>
-    <div class="section results" :class="{ active: currentMode === 'results' }"></div>
+    <div class="section results" :class="{ active: currentMode === 'results' }">
+      <h1>Gracias!</h1>
+    </div>
   </div>
 </template>
 
@@ -54,7 +62,10 @@ export default {
     return {
       connected: false,
       currentMode: 'waiting',
+      gameMode: 'normal',
+      gameMode: 'autoplay',
       playerName: '',
+      freeAnswer: '',
       currentQuestion: {
         label: 'How many times do you eat a day?',
         type: 'free',
@@ -72,7 +83,9 @@ export default {
             label: 'Cupidatat in mollit tempor sunt'
           }
         ]
-      }
+      },
+      questionIndex: -1,
+      questions: []
     }
   },
   mounted () {
@@ -119,6 +132,33 @@ export default {
       }
     },
 
+    startSurvey () {
+      this.questionIndex = 0
+      this.currentQuestion = this.questions[this.questionIndex]
+      this.currentMode = 'question'
+    },
+
+    next () {
+      this.questionIndex++
+      if (this.questionIndex >= this.questions.length) {
+        this.summary()
+        return
+      }
+      this.currentQuestion = this.questions[this.questionIndex]
+    },
+
+    summary () {
+      this.currentMode = 'results'
+    },
+
+    submitFreeAnswer () {
+      const answer = {
+        code: this.freeAnswer
+      }
+      this.submitResponse(answer)
+      this.freeAnswer = ''
+    },
+
     submitResponse (answer) {
       const question = this.currentQuestion.code
       const value = answer.code
@@ -132,6 +172,9 @@ export default {
       })
 
       this.device.publish('iotquiz/game/123/answer', payload)
+      if (this.gameMode === 'autoplay') {
+        this.next()
+      }
     }
   }
 }
@@ -166,15 +209,7 @@ export default {
         background: #dedede;
         display: inline-block;
 
-        &.short {
-          max-width: 40%;
-          background: #dedede;
-          padding: 30px 40px;
-          margin: 1em;
-          border-radius: 5px;
-        }
-
-        &.long {
+        &.short, &.long {
           padding: 15px 20px;
           display: block;
           margin: 1em 0.5em;

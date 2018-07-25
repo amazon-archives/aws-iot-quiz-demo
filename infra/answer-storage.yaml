@@ -18,7 +18,7 @@ Resources:
     Properties:
       AttributeDefinitions:
         - 
-          AttributeName: GameId
+          AttributeName: UserId
           AttributeType: S
         - 
           AttributeName: QuestionId
@@ -28,7 +28,7 @@ Resources:
           AttributeName: QuestionId
           KeyType: HASH
         - 
-          AttributeName: GameId
+          AttributeName: UserId
           KeyType: RANGE
       ProvisionedThroughput:
         ReadCapacityUnits: 5

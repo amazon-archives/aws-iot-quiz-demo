@@ -23,7 +23,7 @@
         <div class="a long" v-for="answer in currentQuestion.answers" v-if="currentQuestion.type === 'long'" @click="submitResponse(answer)">
           {{ answer.label }}
         </div>
-        <div class="a rate" v-for="answer in [1,2,3,4,5,6,7,8,9,10]" v-if="currentQuestion.type === 'rate'" @click="submitResponse(answer)">
+        <div class="a rate" v-for="answer in [1,2,3,4,5,6,7,8,9,10]" v-if="currentQuestion.type === 'rate'" @click="submitResponse({ code: answer })">
           {{ answer }}
         </div>
         <div class="a free" v-if="currentQuestion.type === 'free'">
@@ -85,7 +85,81 @@ export default {
         ]
       },
       questionIndex: -1,
-      questions: []
+      questions: [
+  {
+    "code": "valoracion-evento",
+    "label": "Cómo valorarías el evento en general?",
+    "type": "rate"
+  },
+  {
+    "code": "sesion-favorita",
+    "label": "Qué sesión te ha gustado más?",
+    "type": "short",
+    "answers": [{
+      "code": "intro",
+      "label": "Introduccion"
+    }, {
+      "code": "servicios",
+      "label": "Presentación de los servicios de Iot"
+    }, {
+      "code": "primeros-pasos",
+      "label": "Primeros pasos con Iot"
+    }, {
+      "code": "partner",
+      "label": "Plataformas IoT en la industria"
+    }]
+  },
+  {
+    "code": "volverias",
+    "label": "Estarías interesado en volver a este tipo de desayunos tecnológicos organizados por AWS?",
+    "type": "short",
+    "answers": [{
+      "code": "si",
+      "label": "Sí"
+    }, {
+      "code": "no",
+      "label": "No"
+    }]
+  },
+  {
+    "code": "desafio",
+    "label": "Cuál es el mayor desafío al que te enfrentas en tus proyectos de IoT?",
+    "type": "short",
+    "answers": [{
+      "code": "conectividad",
+      "label": "Conectividad"
+    }, {
+      "code": "device-management",
+      "label": "Gestión de dispositivos"
+    }, {
+      "code": "software",
+      "label": "Desarrollo software"
+    }, {
+      "code": "hardware",
+      "label": "Desarrollo hardware"
+    }, {
+      "code": "na",
+      "label": "Otro | N/A"
+    }]
+  },
+  {
+    "code": "familiarizado",
+    "label": "Has evaluado los servicios de IoT de AWS?",
+    "type": "short",
+    "answers": [{
+      "code": "si",
+      "label": "Sí"
+    }, {
+      "code": "no",
+      "label": "No"
+    }]
+  },
+  {
+    "code": "something-else",
+    "label": "Tienes algún comentario o sugerencia?",
+    "type": "free"
+  }
+]
     }
   },
   mounted () {

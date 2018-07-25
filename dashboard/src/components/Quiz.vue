@@ -13,7 +13,7 @@
             <div class="thing-name">
               {{ device.thingName }}
             </div>
-            <div class="player-name" v-show="device.attributes.Name">
+            <div class="player-name" v-show="device.attributes.Name" v-if="device.attributes">
               {{ device.attributes.Name }}
             </div>
             <div class="loader">
@@ -231,7 +231,7 @@ export default {
         })
     },
     processMessage (topic, payload) {
-      const topicStr = topic.indexOf('shadow/update/accepted') !== -1 ? 'shadow' : topic.indexOf('shadow/update/accepted') !== -1 ? 'registration' : topic.indexOf('/answer') !== -1 ? 'answer' : topic.indexOf('/clicker') !== -1 ? 'clicker' : 'unknown'
+      const topicStr = topic.indexOf('shadow/update/accepted') !== -1 ? 'shadow' : topic.indexOf('iotquiz/registrations') !== -1 ? 'registration' : topic.indexOf('/answer') !== -1 ? 'answer' : topic.indexOf('/clicker') !== -1 ? 'clicker' : 'unknown'
       switch (topicStr) {
         case 'shadow':
           const thingName = topic.split('/')[2]

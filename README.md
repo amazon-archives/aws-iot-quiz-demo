@@ -148,7 +148,7 @@ Upon loading the quiz, the system will call the `DeviceService` to fetch all ava
 
 TODO Capture
 
-When the quiz loads for the first time - and after all information from available devices is fetched - devices are set into a `disabled` state - i.e. they would not be used for that quiz game. In order to use a certain device in a game, we need to activate it. To do so, simply click on the device 
+When the quiz loads for the first time - and after all information from available devices is fetched - devices are set into a `disabled` state - i.e. they would not be used for that quiz game. In order to use a certain device in a game, we need to activate it. To do so, simply click on the device.
 
 #### Mobile devices
 
